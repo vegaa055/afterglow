@@ -34,7 +34,6 @@ def ideal() -> dict:
         "solar_elevation":         -4.5,  # optimal twilight window
     }
 
-
 def overcast() -> dict:
     return {**ideal(), "cloud_cover_high": 95.0, "cloud_cover_low": 95.0}
 
