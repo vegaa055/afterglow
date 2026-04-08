@@ -2,8 +2,8 @@
 # Afterglow — Docker Compose
 #
 # Profiles:
-#   (default / no profile)  → production-like: Gunicorn + Uvicorn workers
-#   dev                     → Uvicorn with --reload, source mounted live
+#   (default)  → production-like: Gunicorn + Uvicorn workers
+#   dev        → Uvicorn with --reload, source mounted live
 #
 # Usage:
 #   Production:  docker compose up --build
@@ -12,54 +12,47 @@
 
 services:
 
-  # ── Production service ───────────────────────────────────────
+  # ── Production ───────────────────────────────────────────────
   afterglow:
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
     image: afterglow:latest
-    container_name: afterglow
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      WEB_CONCURRENCY: "2"
-      # Suppress Python bytecode writes (cleaner container logs)
+      WEB_CONCURRENCY: "${WEB_CONCURRENCY:-2}"
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
     volumes:
-      # Persist the requests-cache SQLite DB across restarts
       - cache-data:/app/.cache
     healthcheck:
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
       interval: 30s
       timeout: 5s
       start_period: 20s
       retries: 3
-    profiles: ["", "prod"]   # default profile
+    profiles: [ "", "prod" ]
 
-
-  # ── Dev service ──────────────────────────────────────────────
+  # ── Dev (live reload) ────────────────────────────────────────
   afterglow-dev:
     build:
       context: .
       dockerfile: Dockerfile
-      target: builder         # use the builder stage — has gcc if we ever need it
+      target: builder
     image: afterglow:dev
-    container_name: afterglow-dev
     ports:
       - "8000:8000"
     environment:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
     volumes:
-      # Live-mount the entire app directory — edit locally, reload instantly
-      - ./:/app
+      # Mount app/ source so edits hot-reload without a rebuild
+      - ./app:/app
       - cache-data:/app/.cache
     working_dir: /app
-    # Override the production CMD: single Uvicorn worker with --reload
     command: >
       uvicorn main:app
         --host 0.0.0.0
@@ -67,8 +60,7 @@ services:
         --reload
         --reload-dir /app
         --log-level debug
-    profiles: ["dev"]
-
+    profiles: [ "dev" ]
 
 volumes:
   cache-data:
