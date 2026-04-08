@@ -220,7 +220,7 @@ def _score_day(
 @app.get("/", include_in_schema=False)
 async def dashboard(request: Request):
     """Serve the main HTML dashboard."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.get("/health", tags=["meta"])
