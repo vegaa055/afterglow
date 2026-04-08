@@ -27,7 +27,7 @@ Install:
 from __future__ import annotations
 
 import logging
-import time
+
 from contextlib import asynccontextmanager
 from datetime import date, datetime
 from typing import Annotated, Optional
@@ -38,7 +38,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from forecast import AfterglowFetcher, DayForecast
 from scheduler import start_scheduler, stop_scheduler

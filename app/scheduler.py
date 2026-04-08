@@ -31,8 +31,8 @@ from typing import Optional
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from forecast import AfterglowFetcher, DayForecast
-from scorer import AfterglowScorer, ScoreResult
+from forecast import AfterglowFetcher
+from scorer import AfterglowScorer
 from solar import SolarCalculator
 
 logger = logging.getLogger(__name__)
