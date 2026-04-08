@@ -134,8 +134,17 @@ class TestGaussianCurves:
         assert 20 <= peak <= 70, f"Mid cloud peak at {peak}%, expected ~45%"
 
     def test_zero_clouds_scores_low(self, scorer):
-        d = {**ideal(), "cloud_cover_low": 0.0, "cloud_cover_mid": 0.0, "cloud_cover_high": 0.0}
-        assert scorer.score(d).score < 30, "Cloudless sky should score below 30"
+        # Zero out clouds AND aerosol — a genuinely clear, clean sky has
+        # nothing to scatter light and should score Poor.
+        # Keeping AOD=0.3 from ideal() would contribute ~17pts on its own.
+        d = {
+            **ideal(),
+            "cloud_cover_low":       0.0,
+            "cloud_cover_mid":       0.0,
+            "cloud_cover_high":      0.0,
+            "aerosol_optical_depth": 0.0,
+        }
+        assert scorer.score(d).score < 20, "Clear, clean sky should score Poor"
 
     def test_full_cloud_cover_scores_low(self, scorer):
         d = {**ideal(), "cloud_cover_low": 100.0, "cloud_cover_mid": 100.0}
