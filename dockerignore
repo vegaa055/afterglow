@@ -1,0 +1,50 @@
+# ── Python artifacts ─────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# ── Virtual environments ──────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Dev / test ────────────────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.cover
+tests/
+
+# ── Runtime caches (regenerated inside container) ────────────
+.afterglow_cache
+*.sqlite
+*.db
+
+# ── Docker files themselves ───────────────────────────────────
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# ── Version control ───────────────────────────────────────────
+.git/
+.gitignore
+.github/
+
+# ── Editor / OS ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Docs / misc ───────────────────────────────────────────────
+README.md
+*.md
+docs/

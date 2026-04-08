@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFTERGLOW — Sunset Forecast</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../static/style.css" />
+</head>
+
+<body>
+
+    <!-- ─── Atmospheric background layers ─── -->
+    <div class="sky-bg">
+        <div class="sky-layer sky-deep"></div>
+        <div class="sky-layer sky-horizon" id="skyHorizon"></div>
+        <div class="sky-layer sky-glow" id="skyGlow"></div>
+        <div class="grain-overlay"></div>
+    </div>
+
+    <!-- ─── Header ─── -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="wordmark">
+                <span class="wordmark-main">AFTERGLOW</span>
+                <span class="wordmark-sub">Sunset · Sunrise · Vividness Forecast</span>
+            </div>
+            <div class="header-meta" id="headerMeta">
+                <span class="meta-item" id="metaTime">——:——</span>
+                <span class="meta-sep">·</span>
+                <span class="meta-item" id="metaCoords">acquiring signal</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ─── Location bar ─── -->
+    <section class="location-bar">
+        <div class="location-inner">
+            <div class="loc-field-group">
+                <label class="loc-label">LAT</label>
+                <input class="loc-input" id="inputLat" type="number" step="0.0001" value="31.5457"
+                    placeholder="31.5457" />
+            </div>
+            <div class="loc-field-group">
+                <label class="loc-label">LON</label>
+                <input class="loc-input" id="inputLon" type="number" step="0.0001" value="-110.3019"
+                    placeholder="-110.3019" />
+            </div>
+            <div class="loc-field-group loc-field-tz">
+                <label class="loc-label">TIMEZONE</label>
+                <input class="loc-input" id="inputTz" type="text" value="America/Phoenix"
+                    placeholder="America/Phoenix" />
+            </div>
+            <div class="loc-field-group loc-field-elev">
+                <label class="loc-label">ELEV (m)</label>
+                <input class="loc-input" id="inputElev" type="number" step="1" value="1400" placeholder="1400" />
+            </div>
+            <button class="loc-btn" id="btnForecast">
+                <span class="btn-label">FORECAST</span>
+                <span class="btn-icon">→</span>
+            </button>
+            <button class="loc-btn loc-btn-gps" id="btnGPS" title="Use my location">
+                ◎
+            </button>
+        </div>
+    </section>
+
+    <!-- ─── Main content ─── -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Loading state -->
+        <div class="state-loading" id="stateLoading">
+            <div class="loading-ring"></div>
+            <p class="loading-label">Reading the atmosphere…</p>
+        </div>
+
+        <!-- Error state -->
+        <div class="state-error hidden" id="stateError">
+            <p class="error-code">NO SIGNAL</p>
+            <p class="error-msg" id="errorMsg">Could not reach the forecast service.</p>
+            <button class="loc-btn" onclick="retryFetch()">RETRY</button>
+        </div>
+
+        <!-- Forecast content (hidden until loaded) -->
+        <div class="forecast-wrap hidden" id="forecastWrap">
+
+            <!-- Today hero ─────────────────────────────── -->
+            <section class="today-hero">
+                <div class="hero-event hero-sunset">
+                    <div class="event-eyebrow">TONIGHT · SUNSET</div>
+                    <div class="event-time" id="heroSunsetTime">——:——</div>
+                    <div class="dial-wrap">
+                        <canvas class="score-dial" id="dialSunset" width="180" height="180"></canvas>
+                        <div class="dial-center">
+                            <span class="dial-score" id="dialSunsetScore">—</span>
+                            <span class="dial-grade" id="dialSunsetGrade">—</span>
+                        </div>
+                    </div>
+                    <div class="event-desc" id="heroSunsetDesc">—</div>
+                    <div class="event-window" id="heroSunsetWindow">Golden hour: —</div>
+                </div>
+
+                <div class="hero-divider">
+                    <div class="divider-line"></div>
+                    <div class="divider-icon">☀</div>
+                    <div class="divider-line"></div>
+                </div>
+
+                <div class="hero-event hero-sunrise">
+                    <div class="event-eyebrow">TOMORROW · SUNRISE</div>
+                    <div class="event-time" id="heroSunriseTime">——:——</div>
+                    <div class="dial-wrap">
+                        <canvas class="score-dial" id="dialSunrise" width="180" height="180"></canvas>
+                        <div class="dial-center">
+                            <span class="dial-score" id="dialSunriseScore">—</span>
+                            <span class="dial-grade" id="dialSunriseGrade">—</span>
+                        </div>
+                    </div>
+                    <div class="event-desc" id="heroSunriseDesc">—</div>
+                    <div class="event-window" id="heroSunriseWindow">Golden hour: —</div>
+                </div>
+            </section>
+
+            <!-- Breakdown strip ────────────────────────── -->
+            <section class="breakdown-strip" id="breakdownStrip">
+                <div class="strip-label">TONIGHT — FACTOR BREAKDOWN</div>
+                <div class="strip-factors" id="stripFactors">
+                    <!-- populated by JS -->
+                </div>
+                <div class="strip-flags" id="stripFlags"></div>
+            </section>
+
+            <!-- 7-day chart ─────────────────────────────── -->
+            <section class="chart-section">
+                <div class="section-header">
+                    <span class="section-title">7-DAY OUTLOOK</span>
+                    <div class="chart-toggle">
+                        <button class="toggle-btn active" id="btnToggleSunset"
+                            onclick="setChartMode('sunset')">SUNSET</button>
+                        <button class="toggle-btn" id="btnToggleSunrise"
+                            onclick="setChartMode('sunrise')">SUNRISE</button>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Week card strip ─────────────────────────── -->
+            <section class="week-strip" id="weekStrip">
+                <!-- populated by JS -->
+            </section>
+
+            <!-- Manual scorer ───────────────────────────── -->
+            <section class="scorer-panel">
+                <div class="section-header">
+                    <span class="section-title">ATMOSPHERIC TUNER</span>
+                    <span class="section-sub">Score any set of conditions manually</span>
+                </div>
+                <div class="tuner-grid">
+                    <div class="tuner-sliders" id="tunerSliders">
+                        <!-- populated by JS -->
+                    </div>
+                    <div class="tuner-result">
+                        <canvas class="score-dial" id="dialTuner" width="160" height="160"></canvas>
+                        <div class="dial-center tuner-dial-center">
+                            <span class="dial-score" id="tunerScore">—</span>
+                            <span class="dial-grade" id="tunerGrade">—</span>
+                        </div>
+                        <div class="tuner-breakdown" id="tunerBreakdown"></div>
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- /forecastWrap -->
+    </main>
+
+    <footer class="site-footer">
+        <span>AFTERGLOW · Weather data: Open-Meteo · Solar: Astral · No API key required</span>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="/static/main.js"></script>
+</body>
+
+</html>

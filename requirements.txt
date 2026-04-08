@@ -1,0 +1,39 @@
+# afterglow — Python dependencies
+# Install: pip install -r requirements.txt
+#
+# Minimum-version pins (>=) let pip pick the newest compatible wheel
+# for your Python version. Tested on Python 3.12 and 3.14.
+# Exact pins (==) are reserved for packages with a history of
+# silent breaking changes between minor versions (pydantic, astral).
+
+# --- Web framework ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+jinja2>=3.1.4
+
+# --- Data validation ---
+# pydantic 2.12+ ships pre-built wheels for Python 3.14 on all platforms.
+# Do NOT pin below 2.12 on Python 3.14 — older versions have no cp314 wheel
+# and will try to compile pydantic-core from source (requires Rust + Cargo).
+pydantic>=2.12.0
+
+# --- HTTP + caching ---
+requests>=2.31.0
+requests-cache>=1.2.0
+retry-requests>=2.0.0
+
+# --- Open-Meteo client (optional convenience wrapper) ---
+openmeteo-requests>=1.2.0
+
+# --- Solar calculations ---
+# astral 3.2 is the current stable release; pin exact to avoid API drift.
+astral==3.2
+
+# --- Background scheduling ---
+apscheduler>=3.10.0
+
+# --- Timezone ---
+# zoneinfo is stdlib (Python 3.9+); tzdata provides the IANA database on
+# Windows and some minimal Linux images where it isn't bundled by the OS.
+tzdata>=2024.1

@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────────────────────
+# Afterglow — Dokploy Production Compose
+#
+# This file is used by Dokploy. It differs from docker-compose.yml in
+# three ways required by Dokploy:
+#   1. Services join the external dokploy-network
+#   2. Traefik labels handle routing + TLS (no exposed ports)
+#   3. No container_name (breaks Dokploy logs/metrics)
+#
+# In Dokploy UI:
+#   Compose Type  → Docker Compose
+#   Source        → GitHub  (your repo)
+#   Branch        → main
+#   Compose Path  → ./docker-compose.dokploy.yml
+#
+# Set these env vars in Dokploy → Environment:
+#   DOMAIN            afterglow.yourdomain.com
+#   WEB_CONCURRENCY   2
+# ─────────────────────────────────────────────────────────────
+
+services:
+  afterglow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment:
+      WEB_CONCURRENCY: "${WEB_CONCURRENCY:-2}"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - cache-data:/app/.cache
+    networks:
+      - dokploy-network
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      # ── HTTP router (redirects to HTTPS) ──────────────────
+      - "traefik.http.routers.afterglow-http.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.afterglow-http.entrypoints=web"
+      - "traefik.http.routers.afterglow-http.middlewares=afterglow-https-redirect"
+      - "traefik.http.middlewares.afterglow-https-redirect.redirectscheme.scheme=https"
+      # ── HTTPS router ──────────────────────────────────────
+      - "traefik.http.routers.afterglow.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.afterglow.entrypoints=websecure"
+      - "traefik.http.routers.afterglow.tls=true"
+      - "traefik.http.routers.afterglow.tls.certresolver=letsencrypt"
+      # ── Backend port ──────────────────────────────────────
+      - "traefik.http.services.afterglow.loadbalancer.server.port=8000"
+
+volumes:
+  cache-data:
+    driver: local
+
+networks:
+  dokploy-network:
+    external: true
