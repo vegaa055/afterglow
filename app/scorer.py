@@ -41,7 +41,7 @@ GRADES: list[tuple[int, str, str]] = [
     (81, "Epic",   "🔥 Extraordinary — drop everything."),
     (61, "Vivid",  "✨ Strong color expected."),
     (41, "Good",   "🌤 Worth watching."),
-    (21, "Fair",   "🌥 Modest colour possible."),
+    (21, "Fair",   "🌥 Modest color possible."),
     (0,  "Poor",   "☁ Unlikely to be noteworthy."),
 ]
 
