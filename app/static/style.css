@@ -570,6 +570,8 @@ header, section, main, footer { position: relative; z-index: 1; }
   .week-strip { grid-template-columns: repeat(4, 1fr); }
   .tuner-grid { grid-template-columns: 1fr; }
   .tuner-sliders { grid-template-columns: 1fr; }
+
+  .wordmark-sub { font-size: 8px; }
 }
 @media (max-width: 600px) {
   .site-header { padding: 20px 16px; }
